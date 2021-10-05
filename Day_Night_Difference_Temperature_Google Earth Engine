@@ -1,0 +1,49 @@
+///INSTRUCTIONS
+//import shape of the city with the name 'table'
+//Draw a polygon in the area with the name 'geometry'
+//run....
+
+
+
+// UNIT CONVERSION FUNCTIONS
+function MODIS_LandSurfaceTemperature_Conversion (image) {
+  return image.multiply(0.02).subtract(273.15).copyProperties(image, ['system:time_start']);
+}
+
+// MODIS COLLECTION
+var MODIS_LST_Day = ee.ImageCollection("MODIS/006/MOD11A1")
+.map(MODIS_LandSurfaceTemperature_Conversion)
+.filterDate('2020-05-01','2020-10-31')
+.max().select('LST_Day_1km').clip(table);
+
+var MODIS_LST_Night = ee.ImageCollection("MODIS/006/MOD11A1")
+.map(MODIS_LandSurfaceTemperature_Conversion)
+.filterDate('2020-05-01','2020-10-31')
+.max().select('LST_Night_1km').clip(table);
+
+var MODIS_LST_Difference = MODIS_LST_Day.subtract(MODIS_LST_Night);
+
+////SCORE HEAT RESILIENT CITY INDEX 
+
+var score_DayNight_Difference = MODIS_LST_Difference;
+
+var average = ee.Number(MODIS_LST_Difference.reduceRegion({
+reducer: ee.Reducer.mean(),
+geometry: table,
+scale: 30,
+maxPixels: 1e9
+}).values().get(0));
+
+print(average,'Average');
+
+//Visualize maps
+
+var visualization = {min:5, max: 15, palette: ['blue','green','yellow','orange','red']};
+
+
+//'0000ff', '00ffff', 'ffff00', 'ff0000'
+
+Map.centerObject(MODIS_LST_Difference);
+
+Map.addLayer(MODIS_LST_Difference,visualization, "Day-night difference");
+
