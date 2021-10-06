@@ -1,0 +1,26 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep 14 16:35:09 2021
+
+@author: DELL
+"""
+
+####This code use the output of the 'High_Avg_Summer_Tmpt and Heat_Days' code.
+
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv("HEAT RESILIENCE INDEX\\Cities_Data_MayJunJulyAgu.csv")  #This is the Output of the first code
+df.head()
+
+max_hd = df['HD'].max()
+min_hd = df['HD'].min()
+    
+
+D=[]
+for i in df['HD']:
+    N= ((i - min_hd)/(max_hd - min_hd)) * 10
+    D.append(N)
+    print(N)
+    
+df['N_HD']= D
