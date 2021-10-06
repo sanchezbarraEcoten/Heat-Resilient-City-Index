@@ -1,0 +1,74 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep 14 12:20:21 2021
+
+@author: DELL
+"""
+##Run this script for all your cities and when you finish save the table with the last part of this script
+
+import pandas as pd
+import numpy as np
+a=input("name of the file: ")
+# Read CSV file into Data Frame
+city = pd.read_csv("HEAT RESILIENCE INDEX\\temperature\\"+a+".csv", header=None)
+headers =["month","day","hour","i4","i5","i6","i7","i8","i9","iT"]
+city.columns=headers
+city.drop(columns=["i4","i5","i6","i7","i8","i9"], inplace=True)
+print(city.head)
+city.dtypes
+
+#Filtering dataFrame 
+new= []
+for m in range(5,9):  #Summer Months (May,Agust)
+
+    
+    for d in range(1,30): #Days
+        
+        test1=city.groupby(['month', 'day'])
+        mes1dia1=test1.get_group((m,d))
+        mx=mes1dia1['iT'].max()
+        mi=mes1dia1['iT'].min()
+
+
+        new.append({'month':m, 'day': d, 'Max': mx, 'Min': mi })
+        Max_Min = pd.DataFrame(new)
+        
+del test1,mes1dia1,m,d,mi,mx,new
+        
+# High Average Summer Temperature 
+T_avg_high=Max_Min["Max"].mean() 
+print("High average temperature is {}".format(T_avg_high))
+T_Max=Max_Min["Max"].max()    
+print("Maximmum temperature is {}".format(T_Max))
+T_Min=Max_Min["Min"].min()    
+print("Minimmum temperature is {}".format(T_Min))
+HAST =(((T_avg_high - T_Min)/(T_Max - T_Min)) * 10) 
+print("High Average Summer Temperature is {}".format(HAST))
+
+
+#Heat Days
+HD1 = (T_Max * .8)
+print("above {} degrees count as a heat day".format(HD1) )
+HeatDays=Max_Min[Max_Min.Max >= HD1]
+NHD=HeatDays.shape[0]
+print("Number of heat Days is {}".format(NHD))  #NumberOfHeatDays
+del headers,Max_Min
+
+##Building the Output DataFrame
+ciudad=a
+data= {'city':[ciudad], 'T_avg_high':[T_avg_high], 'T_Max':[T_Max], 'T_Min':[T_Min], 'HAST':[HAST], 'HD':[NHD]}
+data_df=pd.DataFrame.from_dict(data)
+
+if "Final" in locals():
+    print("adding values of the new city")
+else:
+    Final=pd.DataFrame({'city':[], 'T_avg_high':[ ], 'T_Max':[], 'T_Min':[], 'HAST':[], 'HD':[]})
+    #else: print("Adding values of the new city")
+        
+        
+Final= Final.append(data_df)
+#%%
+##LAST 
+##save the final data frame at the End
+
+#Final.to_csv('HEAT RESILIENCE INDEX\\test.csv')
